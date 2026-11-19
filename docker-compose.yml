@@ -5,6 +5,9 @@ services:
       - "8000:8000"
     environment:
       APP_DB_PATH: /data/app.db
+      # 周报核对接口（GET /api/weekly-reconciliation）的 Bearer 令牌；
+      # 生产部署请通过 .env 或宿主机环境变量覆盖，不要把真实令牌提交到仓库。
+      APP_RECONCILE_TOKEN: ${APP_RECONCILE_TOKEN:-change-me}
     volumes:
       - app-data:/data
     restart: unless-stopped

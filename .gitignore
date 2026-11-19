@@ -1,6 +1,9 @@
 .venv/
+.pylibs/
+.pyuser/
 __pycache__/
 *.pyc
 app.db
 *.db-wal
 *.db-shm
+.env

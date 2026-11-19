@@ -5,6 +5,8 @@
 """
 from __future__ import annotations
 
+from datetime import date
+
 from pydantic import BaseModel, Field, field_validator
 
 MAX_BATCH = 40  # 整批提交最多 40 条
@@ -15,12 +17,31 @@ class CaseIn(BaseModel):
     age: int = Field(ge=0, le=100, description="年龄 0~100 岁")
     zip: str = Field(pattern=r"^\d{5}$", description="五位数字邮编")
     disease: str = Field(min_length=1, max_length=128, description="病种")
+    # 可选发病日期；未填（null/缺省）记为未知。必须是合法的 YYYY-MM-DD 日历日期。
+    onset_date: str | None = Field(default=None, description="发病日期 YYYY-MM-DD；未填记为未知")
 
     @field_validator("case_id", "disease", mode="before")
     @classmethod
     def _strip(cls, v):
         if isinstance(v, str):
             return v.strip()
+        return v
+
+    @field_validator("onset_date")
+    @classmethod
+    def _valid_iso_date(cls, v):
+        if v is None:
+            return None
+        if not isinstance(v, str):
+            raise ValueError("发病日期须为 YYYY-MM-DD 字符串")
+        v = v.strip()
+        try:
+            date.fromisoformat(v)
+        except ValueError:
+            raise ValueError("发病日期须为合法的 YYYY-MM-DD 日期")
+        # date.fromisoformat 在 3.11 会接受一些非标准形态，这里强制严格 10 位格式
+        if len(v) != 10 or v[4] != "-" or v[7] != "-":
+            raise ValueError("发病日期须为 YYYY-MM-DD 格式")
         return v
 
 
